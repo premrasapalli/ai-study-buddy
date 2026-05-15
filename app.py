@@ -1,87 +1,140 @@
 import streamlit as st
 
-st.title("🧠 AI Study Buddy (Demo Mode)")
+st.set_page_config(page_title="AI Study Buddy", page_icon="🧠", layout="wide")
 
-topic = st.text_input("Enter a topic:")
+# 🎨 Custom CSS (Industry UI)
+st.markdown("""
+<style>
+.main {
+    background-color: #0f172a;
+    color: white;
+}
+.card {
+    padding: 20px;
+    border-radius: 15px;
+    background-color: #1e293b;
+    margin-bottom: 15px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+}
+.header {
+    font-size: 40px;
+    font-weight: bold;
+}
+.sub {
+    color: #94a3b8;
+}
+</style>
+""", unsafe_allow_html=True)
 
-# 📘 Explain
+# 🧠 Header
+st.markdown('<div class="header">🧠 AI Study Buddy</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub">Learn smarter with AI-powered prompts</div>', unsafe_allow_html=True)
+
+st.markdown("---")
+
+# 📌 Sidebar
+st.sidebar.title("⚙️ Control Panel")
+
+mode = st.sidebar.radio(
+    "Select Mode",
+    ["📘 Explain", "❓ Quiz", "🎨 Fun Mode", "📝 Summary"]
+)
+
+difficulty = st.sidebar.select_slider(
+    "Difficulty",
+    ["Easy", "Medium", "Hard"]
+)
+
+language = st.sidebar.selectbox(
+    "Language",
+    ["English", "Telugu", "Hindi"]
+)
+
+# 🧠 Session state
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+# 📥 Input
+col1, col2 = st.columns([3,1])
+
+with col1:
+    topic = st.text_input("Enter topic", placeholder="e.g. Newton’s Laws")
+
+with col2:
+    generate = st.button("🚀 Generate")
+
+# 📘 Functions
 def explain(topic):
     return f"""
-📘 **Explanation:**
-{topic} is an important concept.
-
-👉 In simple words:
-It helps us understand how things work in real life.
+### 📘 Explanation ({difficulty})
+{topic} explained simply.
 
 👉 Example:
-Think about {topic} like something you use daily.
+Think of it in real life.
 
-(This is demo mode — add API for real AI responses)
+🌍 Language: {language}
 """
 
-# ❓ Quiz
 def quiz(topic):
     return f"""
-❓ **Quiz on {topic}:**
+### ❓ Quiz ({difficulty})
 
-1. What is {topic}?
+1. What is {topic}?  
 A) Option 1  
 B) Option 2  
 C) Option 3  
 D) Option 4  
 ✅ Answer: A  
-
-2. Why is {topic} important?
-A) Reason 1  
-B) Reason 2  
-C) Reason 3  
-D) Reason 4  
-✅ Answer: B  
 """
 
-# 🎨 Emoji Mode
 def emoji_mode(topic):
     return f"""
-🎨 **Fun Learning with Emojis:**
+### 🎨 Fun Learning
 
-{topic} → Learn it easily 📘✨  
-
-Example:
-Understanding {topic} makes life easier 💡😊  
-
-(This is demo mode)
+{topic} → Learn easily 📘✨  
+💡 Makes learning fun 😄
 """
 
-# 📝 Summary
-def summarize(topic):
+def summary(topic):
     return f"""
-📝 **Summary of {topic}:**
+### 📝 Summary
 
-- Key point 1  
-- Key point 2  
-- Key point 3  
-- Key point 4  
-- Key point 5  
-
-(Demo content)
+- Point 1  
+- Point 2  
+- Point 3  
+- Point 4  
 """
 
-# 🎛️ Buttons
-if st.button("📘 Explain"):
-    if topic:
-        st.write(explain(topic))
+# 🚀 Generate Output
+if generate and topic:
+    if mode == "📘 Explain":
+        result = explain(topic)
+    elif mode == "❓ Quiz":
+        result = quiz(topic)
+    elif mode == "🎨 Fun Mode":
+        result = emoji_mode(topic)
+    else:
+        result = summary(topic)
 
-if st.button("❓ Quiz"):
-    if topic:
-        st.write(quiz(topic))
+    st.session_state.history.append(topic)
 
-if st.button("🎨 Emoji Mode"):
-    if topic:
-        st.write(emoji_mode(topic))
+    st.markdown(f'<div class="card">{result}</div>', unsafe_allow_html=True)
 
-if st.button("📝 Summary"):
-    if topic:
-        st.write(summarize(topic))
+# 📚 History Panel
+st.sidebar.markdown("---")
+st.sidebar.subheader("📚 Recent Topics")
 
+for t in st.session_state.history[-5:]:
+    st.sidebar.write(f"• {t}")
+
+# 📥 Download
+if topic:
+    st.download_button(
+        "📥 Download Notes",
+        data=f"Notes on {topic}",
+        file_name=f"{topic}.txt"
+    )
+
+# Footer
 st.markdown("---")
-st.caption("🚀 Built with Prompt Engineering (Demo Mode)")
+st.caption("🚀 Industry-Level Prompt Engineering Project")
