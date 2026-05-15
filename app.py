@@ -1,140 +1,137 @@
 import streamlit as st
+import time
 
 st.set_page_config(page_title="AI Study Buddy", page_icon="🧠", layout="wide")
 
-# 🎨 Custom CSS (Industry UI)
+# 🎨 DARK THEME CSS
 st.markdown("""
 <style>
-.main {
+.stApp {
     background-color: #0f172a;
     color: white;
 }
-.card {
-    padding: 20px;
-    border-radius: 15px;
+
+/* Chat bubbles */
+.user-msg {
     background-color: #1e293b;
-    margin-bottom: 15px;
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
 }
-.header {
-    font-size: 40px;
-    font-weight: bold;
+
+.bot-msg {
+    background-color: #020617;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
 }
-.sub {
-    color: #94a3b8;
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #020617;
+}
+
+/* Buttons */
+.stButton button {
+    background-color: #2563eb;
+    color: white;
+    border-radius: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # 🧠 Header
-st.markdown('<div class="header">🧠 AI Study Buddy</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub">Learn smarter with AI-powered prompts</div>', unsafe_allow_html=True)
-
-st.markdown("---")
+st.title("🧠 AI Study Buddy")
+st.caption("Chat + Prompt Engineering 🚀")
 
 # 📌 Sidebar
 st.sidebar.title("⚙️ Control Panel")
 
-mode = st.sidebar.radio(
-    "Select Mode",
-    ["📘 Explain", "❓ Quiz", "🎨 Fun Mode", "📝 Summary"]
+mode = st.sidebar.selectbox(
+    "Mode",
+    ["Explain", "Quiz", "Emoji", "Summary"]
 )
 
-difficulty = st.sidebar.select_slider(
-    "Difficulty",
-    ["Easy", "Medium", "Hard"]
-)
-
-language = st.sidebar.selectbox(
-    "Language",
-    ["English", "Telugu", "Hindi"]
+prompt_type = st.sidebar.selectbox(
+    "Prompt Technique",
+    ["Zero-shot", "Few-shot", "Role"]
 )
 
 # 🧠 Session state
-if "history" not in st.session_state:
-    st.session_state.history = []
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# 📥 Input
-col1, col2 = st.columns([3,1])
-
-with col1:
-    topic = st.text_input("Enter topic", placeholder="e.g. Newton’s Laws")
-
-with col2:
-    generate = st.button("🚀 Generate")
-
-# 📘 Functions
-def explain(topic):
-    return f"""
-### 📘 Explanation ({difficulty})
-{topic} explained simply.
-
-👉 Example:
-Think of it in real life.
-
-🌍 Language: {language}
-"""
-
-def quiz(topic):
-    return f"""
-### ❓ Quiz ({difficulty})
-
-1. What is {topic}?  
-A) Option 1  
-B) Option 2  
-C) Option 3  
-D) Option 4  
-✅ Answer: A  
-"""
-
-def emoji_mode(topic):
-    return f"""
-### 🎨 Fun Learning
-
-{topic} → Learn easily 📘✨  
-💡 Makes learning fun 😄
-"""
-
-def summary(topic):
-    return f"""
-### 📝 Summary
-
-- Point 1  
-- Point 2  
-- Point 3  
-- Point 4  
-"""
-
-# 🚀 Generate Output
-if generate and topic:
-    if mode == "📘 Explain":
-        result = explain(topic)
-    elif mode == "❓ Quiz":
-        result = quiz(topic)
-    elif mode == "🎨 Fun Mode":
-        result = emoji_mode(topic)
+# 💬 Display chat with avatars
+for msg in st.session_state.messages:
+    if msg["role"] == "user":
+        st.markdown(f"""
+        <div class="user-msg">
+        👤 <b>You:</b><br>{msg["content"]}
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        result = summary(topic)
+        st.markdown(f"""
+        <div class="bot-msg">
+        🤖 <b>AI:</b><br>{msg["content"]}
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.session_state.history.append(topic)
+# ✍️ Input
+user_input = st.chat_input("Ask anything...")
 
-    st.markdown(f'<div class="card">{result}</div>', unsafe_allow_html=True)
+# 🧠 Prompt builder
+def build_prompt(user_input):
+    if prompt_type == "Zero-shot":
+        return f"Explain {user_input} clearly."
 
-# 📚 History Panel
-st.sidebar.markdown("---")
-st.sidebar.subheader("📚 Recent Topics")
+    elif prompt_type == "Few-shot":
+        return f"""
+        Explain with examples:
 
-for t in st.session_state.history[-5:]:
-    st.sidebar.write(f"• {t}")
+        Gravity → Objects fall ⬇️🌍  
+        Plants → Need sunlight ☀️🌱  
 
-# 📥 Download
-if topic:
-    st.download_button(
-        "📥 Download Notes",
-        data=f"Notes on {topic}",
-        file_name=f"{topic}.txt"
-    )
+        {user_input} →
+        """
+
+    else:
+        return f"""
+        You are a friendly teacher.
+
+        Explain {user_input} in simple terms with examples.
+        """
+
+# 🤖 Demo response
+def generate_response(user_input):
+    prompt = build_prompt(user_input)
+
+    if mode == "Explain":
+        return f"{user_input} explained simply.\n\n🧠 Prompt:\n{prompt}"
+
+    elif mode == "Quiz":
+        return f"Quiz on {user_input}.\n\n🧠 Prompt:\n{prompt}"
+
+    elif mode == "Emoji":
+        return f"{user_input} → Easy learning ✨📘\n\n🧠 Prompt:\n{prompt}"
+
+    else:
+        return f"Summary of {user_input}.\n\n🧠 Prompt:\n{prompt}"
+
+# 💬 Chat logic
+if user_input:
+    # Add user message
+    st.session_state.messages.append({"role": "user", "content": user_input})
+
+    # Show typing animation
+    with st.spinner("🤖 AI is thinking..."):
+        time.sleep(1.5)  # simulate delay
+        response = generate_response(user_input)
+
+    # Add AI response
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
+    st.rerun()
 
 # Footer
 st.markdown("---")
-st.caption("🚀 Industry-Level Prompt Engineering Project")
+st.caption("💼 Industry-Level Prompt Engineering Chat App")
