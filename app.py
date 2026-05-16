@@ -113,7 +113,7 @@ def generate_response(user_input):
 
     try:
         response = client.chat.completions.create(
-            model="llama3-8b-8192",  # free fast model
+            model="llama-3.1-8b-instant",
             messages=[
                 {"role": "system", "content": "You are a helpful AI tutor."},
                 {"role": "user", "content": prompt}
