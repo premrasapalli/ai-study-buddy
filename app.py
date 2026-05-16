@@ -1,5 +1,7 @@
-from groq import Groq
+import streamlit as st
 import os
+from groq import Groq
+import time
 
 st.set_page_config(page_title="AI Study Buddy", page_icon="🧠", layout="wide")
 
