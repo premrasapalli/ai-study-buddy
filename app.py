@@ -101,21 +101,23 @@ def build_prompt(user_input):
         Explain {user_input} in simple terms with examples.
         """
 
-# 🤖 Demo response
+from openai import OpenAI
+import os
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 def generate_response(user_input):
     prompt = build_prompt(user_input)
 
-    if mode == "Explain":
-        return f"{user_input} explained simply.\n\n🧠 Prompt:\n{prompt}"
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {"role": "system", "content": "You are a helpful AI tutor."},
+            {"role": "user", "content": prompt}
+        ]
+    )
 
-    elif mode == "Quiz":
-        return f"Quiz on {user_input}.\n\n🧠 Prompt:\n{prompt}"
-
-    elif mode == "Emoji":
-        return f"{user_input} → Easy learning ✨📘\n\n🧠 Prompt:\n{prompt}"
-
-    else:
-        return f"Summary of {user_input}.\n\n🧠 Prompt:\n{prompt}"
+    return response.choices[0].message.content
 
 # 💬 Chat logic
 if user_input:
