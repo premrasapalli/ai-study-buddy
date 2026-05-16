@@ -1,5 +1,5 @@
-import streamlit as st
-import time
+from groq import Groq
+import os
 
 st.set_page_config(page_title="AI Study Buddy", page_icon="🧠", layout="wide")
 
@@ -104,21 +104,24 @@ def build_prompt(user_input):
 from openai import OpenAI
 import os
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def generate_response(user_input):
     prompt = build_prompt(user_input)
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[
-            {"role": "system", "content": "You are a helpful AI tutor."},
-            {"role": "user", "content": prompt}
-        ]
-    )
+    try:
+        response = client.chat.completions.create(
+            model="llama3-8b-8192",  # free fast model
+            messages=[
+                {"role": "system", "content": "You are a helpful AI tutor."},
+                {"role": "user", "content": prompt}
+            ]
+        )
 
-    return response.choices[0].message.content
+        return response.choices[0].message.content
 
+    except Exception as e:
+        return f"⚠️ Error: {str(e)}"
 # 💬 Chat logic
 if user_input:
     # Add user message
