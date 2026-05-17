@@ -103,8 +103,10 @@ def build_prompt(user_input):
         Explain {user_input} in simple terms with examples.
         """
 
-from openai import OpenAI
+from groq import Groq
 import os
+
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
